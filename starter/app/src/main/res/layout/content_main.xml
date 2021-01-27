@@ -38,21 +38,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="4dp"
-            android:text="button 1 text" />
+            android:text="@string/repository_1_name"
+            android:textSize="18sp" />
 
         <RadioButton
             android:id="@+id/radio_button_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="4dp"
-            android:text="button 2 text" />
+            android:text="@string/repository_2_name"
+            android:textSize="18sp" />
 
         <RadioButton
             android:id="@+id/radio_button_3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="4dp"
-            android:text="button 3 text" />
+            android:text="@string/repository_3_name"
+            android:textSize="18sp" />
     </RadioGroup>
 
     <com.udacity.LoadingButton
@@ -60,6 +63,8 @@
         android:layout_width="0dp"
         android:layout_height="60dp"
         android:layout_margin="20dp"
+        app:buttonTextColor="@color/white"
+        app:buttonTextSize="24sp"
         app:colorLoadingBar="@color/colorPrimary"
         app:colorLoadingBarBackground="@color/colorPrimaryDark"
         app:layout_constraintBottom_toBottomOf="parent"
