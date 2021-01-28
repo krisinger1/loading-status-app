@@ -8,7 +8,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -25,9 +24,11 @@ class MainActivity : AppCompatActivity() {
     private var downloadID: Long = 0
 
     private lateinit var notificationManager: NotificationManager
-    //private lateinit var intent: Intent
     private lateinit var pendingIntent: PendingIntent
     private lateinit var action: NotificationCompat.Action
+
+    private var downloadFileName = ""
+    private var status = "Failed"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,9 +40,18 @@ class MainActivity : AppCompatActivity() {
         custom_button.setOnClickListener {
             Log.i("MainActivity", "in click listener")
             when(radio_group.checkedRadioButtonId){
-                radio_button_1.id-> download(URLGlide)
-                radio_button_2.id-> download(URLUdacity)
-                radio_button_3.id-> download(URLRetrofit)
+                radio_button_1.id-> {
+                    download(URLGlide)
+                    downloadFileName=radio_button_1.text.toString()
+                }
+                radio_button_2.id-> {
+                    download(URLUdacity)
+                    downloadFileName=radio_button_2.text.toString()
+                }
+                radio_button_3.id-> {
+                    download(URLRetrofit)
+                    downloadFileName=radio_button_3.text.toString()
+                }
                 else -> {
                     custom_button.buttonState=ButtonState.Completed
                     Toast.makeText(this, "Choose a file to download", Toast.LENGTH_SHORT).show()
@@ -52,23 +62,19 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationChannel = NotificationChannel(
                 CHANNEL_ID,
-                "channelName",
+                "Download status",
                 NotificationManager.IMPORTANCE_HIGH
-            )
-                .apply {
+            ).apply {
                     setShowBadge(false)
                 }
 
-            notificationChannel.description = "channel description"
+            notificationChannel.description = resources.getString(R.string.channel_description)
 
             notificationManager = ContextCompat.getSystemService(applicationContext,
                 NotificationManager::class.java) as NotificationManager
 
             notificationManager.createNotificationChannel(notificationChannel)
         }
-
-
-
     }
 
     private val receiver = object : BroadcastReceiver() {
@@ -80,13 +86,18 @@ class MainActivity : AppCompatActivity() {
             val notificationPendingIntent = PendingIntent.getActivity(context,
             0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
-            val intent = Intent(context, DetailActivity::class.java)
-            intent.putExtra(REPO_KEY, "repo name")
+            status = if(id == downloadID) "Success" else "Failure"
+
+            val detailIntent = Intent(context, DetailActivity::class.java)
+            detailIntent.putExtra(NOTIFICATION_ID_KEY, NOTIFICATION_ID)
+            detailIntent.putExtra(FILE_KEY, downloadFileName)
+            detailIntent.putExtra(STATUS_KEY, status)
+
 
             pendingIntent = PendingIntent.getActivity(
                 context,
                 0,
-                intent,
+                detailIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT
             )
 
@@ -97,11 +108,10 @@ class MainActivity : AppCompatActivity() {
                 .setContentIntent(notificationPendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .addAction(R.drawable.ic_baseline_cloud_download_24,
-                "Check the status", pendingIntent)
+                        context.getString(R.string.notification_button), pendingIntent)
                 .setAutoCancel(true)
 
-            Toast.makeText(context, "download completed! $id status : ${id == downloadID}", Toast.LENGTH_LONG).show()
-            notificationManager.notify(0, builder.build())
+            notificationManager.notify(NOTIFICATION_ID, builder.build())
         }
     }
 
@@ -127,8 +137,11 @@ class MainActivity : AppCompatActivity() {
         private const val URLRetrofit =
             "https://github.com/square/retrofit"
         private const val CHANNEL_ID = "channelId"
+        const val NOTIFICATION_ID = 0
 
-        const val REPO_KEY = "repository"
+        const val FILE_KEY = "file"
+        const val NOTIFICATION_ID_KEY = "Notification ID"
+        const val STATUS_KEY = "status"
     }
 
 

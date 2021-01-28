@@ -4,6 +4,7 @@
         <attr name="colorLoadingBar" format="color"/>
         <attr name="colorLoadingBarBackground" format="color"/>
         <attr name="buttonTextColor" format="color"/>
+        <attr name="circleColor" format="color"/>
         <attr name="buttonTextSize" format="dimension"/>
     </declare-styleable>
 </resources>

@@ -1,5 +1,6 @@
 package com.udacity
 
+import android.animation.AnimatorSet
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
@@ -19,12 +20,16 @@ class LoadingButton @JvmOverloads constructor(
     private var barColorFront = 0
     private var barColorBack = 0
     private var textColor = 0
+    private var circleColor =0
     private var buttonTextSize=0f
-    private var buttonTextWidth = 0f
 
     private var loadingBarWidth =0f
+    private var loadingCircleAngle =0
+    private var circleMargin= 25f
 
     private val valueAnimator = ValueAnimator()
+    private val circleAnimator = ValueAnimator()
+    private val set = AnimatorSet()
 
     var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
         invalidate()
@@ -34,7 +39,9 @@ class LoadingButton @JvmOverloads constructor(
                 Log.i("LoadingButton", "Button Loading")
                 startLoadingAnimation()
             }
-            ButtonState.Completed -> Log.i("LoadingButton", "Button completed")
+            ButtonState.Completed -> {
+                Log.i("LoadingButton", "Button completed")
+            }
 
         }
     }
@@ -53,6 +60,8 @@ class LoadingButton @JvmOverloads constructor(
             barColorBack=getColor(R.styleable.LoadingButton_colorLoadingBarBackground,0)
             textColor=getColor(R.styleable.LoadingButton_buttonTextColor,0)
             buttonTextSize=getDimension(R.styleable.LoadingButton_buttonTextSize, 0f)
+            circleColor=getColor(R.styleable.LoadingButton_circleColor,0)
+
         }
         paint.apply {
             style= Paint.Style.FILL
@@ -63,21 +72,29 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun startLoadingAnimation(){
-        valueAnimator.duration=3000
-        valueAnimator.repeatCount= 1
+        // animator for loading circle
+        circleAnimator.setIntValues(0,360)
+        circleAnimator.repeatCount= ValueAnimator.INFINITE
+        circleAnimator.addUpdateListener{
+            loadingCircleAngle = it.animatedValue as Int
+            invalidate()
+        }
+        //animator for loading bar
         valueAnimator.setFloatValues(0f, widthSize.toFloat())
+        valueAnimator.repeatCount= ValueAnimator.INFINITE
         valueAnimator.addUpdateListener {
             loadingBarWidth = it.animatedValue as Float
             invalidate()
         }
-        valueAnimator.start()
 
+        set.playTogether(circleAnimator, valueAnimator)
+        set.duration =3000
+        set.start()
     }
 
     override fun performClick(): Boolean {
 
         buttonState=ButtonState.Loading
-        //invalidate()
         return super.performClick()
     }
 
@@ -92,6 +109,12 @@ class LoadingButton @JvmOverloads constructor(
                 paint.color = textColor
                 textWidth=paint.measureText(loadingString)
                 canvas?.drawText(loadingString,((widthSize-textWidth)/2),((heightSize+buttonTextSize)/2),paint )
+                paint.color=circleColor
+                canvas?.drawArc(widthSize-heightSize+circleMargin,
+                        circleMargin,widthSize-circleMargin,
+                        heightSize-circleMargin,
+                        0f,loadingCircleAngle.toFloat(),
+                        true,paint)
             }
             ButtonState.Completed ->{
                 paint.color= barColorBack
